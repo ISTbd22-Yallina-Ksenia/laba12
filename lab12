@@ -5,55 +5,53 @@
 
 import numpy as np
 import random
-import warnings
 import math
-warnings.filterwarnings("ignore", category=RuntimeWarning)
-
-##функция нахождения факториала
-def func_factorial(num):
-    if num == 1:
-        return 1
-    else:
-        return num * func_factorial(num-1)
+from decimal import Decimal
 
 ##ввод данных с проверкой
 while True:
-    n = input("Введите количество слагаемых ряда: ")
-    t = input("Введите количество знаков после запятой: ")
-    if n.isdigit() and t.isdigit():
-        n = int(n)
-        t = int(t)
-        break
+    t = input("Введите количество знаков после запятой для точности вычислений: ")
+    if t.isdigit():
+        if int(t) == 0:
+            print("Вы ввели ноль. Введите другое число")
+        else:
+            t = int(t)
+            break
     else:
-        print("Вы должны были ввести целые числа")
+        print("Вы должны были ввести натуральное число")
 
 ##формирование матрицы
-k = random.randint(1, 10)
-matrix = np.random.randint(-10, 10, size = (k, k))
+k = random.randint(1,3)
+matrix = np.random.uniform(-1, 1, size = (k, k))
 
 ##вывод матрицы
 print("Сгенерирована матрица:\n", matrix)
 
-##вычисление суммы знакопеременного ряда
+                      ##вычисление суммы знакопеременного ряда
 summ = 0 ##сумма ряда
-sign = "+" ##знак предыдущего числа
-error = False ##проверка на ошибки
-try:
-    for i in range(1, n+1):
-        factorial = func_factorial(2*i+1)
-        value = abs(np.linalg.det((matrix*factorial).astype("float64"))/factorial)
-        if sign == "+":
-            summ += -value
-            sign = "-"
-        elif sign == "-":
-            summ += value
-            sign = "+"
-except:
-    print("Число слишком большое")
-    error = True
+factorial = 1 ##факториал
+i = 1
 
-##проверка, summ равен nan (не может быть представлен в виде числа) и не было исключений (ошибка переполнения) выше, соответствующий вывод
-if math.isnan(summ) == True and error == False:
-    print("Число слишком большое.")
-elif math.isnan(summ) == False and error == False:
-    print(f"Сумма ряда равна: {summ:.{t}f}")
+##работа с первым слагаемым
+prev = -abs(np.linalg.det((matrix*factorial).astype("float64"))/factorial) ##prev- предыд слагаемое, мы учитываем самое первое, чтобы дать ему знак "-" по условию
+summ += prev ##добавляем его в сумму ряда
+sign = "-" ##знак предыдущего числа. в данном случае это "-"
+factorial += 1 ##факториал увел на 1, т.к. рассм след слагаемое
+
+##работа с остальными слагаемыми
+while True:
+    factorial = factorial*i
+    i+=1
+    value = abs(np.linalg.det((matrix*factorial).astype("float64"))/factorial)
+    diff = abs(prev) - abs(value) ##разница предыд и текущ слагаемых.
+    if Decimal(str(diff)).as_tuple().exponent*(-1) < t: ##находим разницу между предыд. и текущ. числами, если в результате кол-во
+        break                                           ##знаков после запятой меньше заданного кол-ва t, то выходим из цикла
+    if sign == "+": ##учет знаков слагаемых
+        summ += -value
+        sign = "-"
+    elif sign == "-":
+        summ += value
+        sign = "+"
+        
+##вывод результатов
+print(f"Сумма ряда равна: {summ:.{t}f}")
