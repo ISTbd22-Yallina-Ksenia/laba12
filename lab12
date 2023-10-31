@@ -1,0 +1,59 @@
+##29. Вычислить сумму знакопеременного ряда (|х*(2n+1)!|)/(2n+1)!, где х-матрица ранга к
+##(к и матрица задаются случайным образом), n - номер слагаемого. Сумма считается вычисленной,
+##если точность вычислений будет не меньше t знаков после запятой. У алгоритма д.б. линейная
+##сложность. Знак первого слагаемого  -.
+
+import numpy as np
+import random
+import warnings
+import math
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+##функция нахождения факториала
+def func_factorial(num):
+    if num == 1:
+        return 1
+    else:
+        return num * func_factorial(num-1)
+
+##ввод данных с проверкой
+while True:
+    n = input("Введите количество слагаемых ряда: ")
+    t = input("Введите количество знаков после запятой: ")
+    if n.isdigit() and t.isdigit():
+        n = int(n)
+        t = int(t)
+        break
+    else:
+        print("Вы должны были ввести целые числа")
+
+##формирование матрицы
+k = random.randint(1, 10)
+matrix = np.random.randint(-10, 10, size = (k, k))
+
+##вывод матрицы
+print("Сгенерирована матрица:\n", matrix)
+
+##вычисление суммы знакопеременного ряда
+summ = 0 ##сумма ряда
+sign = "+" ##знак предыдущего числа
+error = False ##проверка на ошибки
+try:
+    for i in range(1, n+1):
+        factorial = func_factorial(2*i+1)
+        value = abs(np.linalg.det((matrix*factorial).astype("float64"))/factorial)
+        if sign == "+":
+            summ += -value
+            sign = "-"
+        elif sign == "-":
+            summ += value
+            sign = "+"
+except:
+    print("Число слишком большое")
+    error = True
+
+##проверка, summ равен nan (не может быть представлен в виде числа) и не было исключений (ошибка переполнения) выше, соответствующий вывод
+if math.isnan(summ) == True and error == False:
+    print("Число слишком большое.")
+elif math.isnan(summ) == False and error == False:
+    print(f"Сумма ряда равна: {summ:.{t}f}")
